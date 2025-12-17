@@ -41,12 +41,11 @@ const Total = ({ parts }) => {
 }
 
 const Course = ({ course }) => {
-
   return (
     <div>
-      <h1>
+      <h2>
         <Header name={course.name} />
-      </h1>
+      </h2>
       <Content parts={course.parts}/>
       <Total parts={course.parts}/> 
     </div>
