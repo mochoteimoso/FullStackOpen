@@ -33,12 +33,16 @@ const Country = ({ country }) => {
   )
 }
 
-const Countries = ({ countriesToShow }) => {
+const Countries = ({ countriesToShow, handleShowDetails }) => {
   return (
     <div>
       {countriesToShow.map(country =>
         <li key={country.cca3}>
-          {country.name.common}
+          {country.name.common} {"  "}
+          <button
+            onClick={() => handleShowDetails(country.cca3)}>
+            Show
+          </button>
         </li>
       )}
     </div>
@@ -48,6 +52,7 @@ const Countries = ({ countriesToShow }) => {
 const App = () => {
   const [countries, setCountries] = useState([])
   const [filter, setFilter] = useState('')
+  const [countryToShow, setCountryToShow] = useState(null)
 
   useEffect(() => {
     countriesService
@@ -62,9 +67,15 @@ const App = () => {
   )
 
   const handleFilterChange = (event) => {
-    console.log(event.target.value)
     setFilter(event.target.value)
+    setCountryToShow(null)
   }
+
+  const handleShowDetails = (cca3) => {
+    const country = countries.find(c => c.cca3 === cca3)
+    setCountryToShow(country)
+  }
+
 
   return (
     <div>
@@ -73,19 +84,28 @@ const App = () => {
         onChange={handleFilterChange}
         />
       
-      {countriesToShow.length === 1 && (
-        <Country country={countriesToShow[0]} />
+      {countryToShow && (
+        <Country country={countryToShow} />
       )}
 
-      {countriesToShow.length > 10 && (
-        <p>Too many matches, specify another filter</p>
+      {!countryToShow && (
+        <>
+          {countriesToShow.length === 1 && (
+            <Country country={countriesToShow[0]} />
+          )}
+
+          {countriesToShow.length > 10 && (
+            <p>Too many matches, specify another filter</p>
+          )}
+
+          {countriesToShow.length > 1 && countriesToShow.length <= 10 && (
+            <Countries
+              countriesToShow={countriesToShow}
+              handleShowDetails={handleShowDetails} 
+            />
+           )}
+        </>
       )}
-
-      {countriesToShow.length > 1 && countriesToShow.length <= 10 && (
-        <Countries countriesToShow={countriesToShow} />
-      )}
-
-
     </div>
   )
 }
