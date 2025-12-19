@@ -38,20 +38,25 @@ const PersonForm = ({ addPerson, newName, handleNameChange, newNumber, handleNum
   )
 }
 
-const Contact = ({ name, number }) => {
+const Contact = ({person, onDelete }) => {
   return (
-    <li> {name} {number} </li>
+    <li>
+      {person.name} {person.number}
+      <button onClick={() => onDelete(person.id)}>
+        delete
+      </button>
+    </li>
   )
 }
 
-const Contacts = ({ personsToShow }) => {
+const Contacts = ({ personsToShow, handleContactDelete }) => {
   return (
     <div>
       {personsToShow.map(person =>
         <Contact
-          key={person.name}
-          name={person.name}
-          number={person.number}
+          key={person.id}
+          person={person}
+          onDelete={handleContactDelete}
         />
       )}
     </div>
@@ -71,6 +76,23 @@ const App = () => {
         setPersons(initialContacts)
       })
   }, [])
+
+  const handleContactDelete = (id) => {
+    const person = persons.find(n => n.id === id)
+    if (window.confirm(`Delete ${person.name}?`)) {
+      personsService
+        .remove(id)
+        .then(() => {
+          setPersons(persons.filter(person => person.id !== id))
+        })
+        .catch(error => {
+          alert(
+            `the contact '${person.name}' was already deleted from server`
+          )
+          setPersons(persons.filter(person => person.id !== id))
+        })
+    }
+  }
 
   const addPerson = (event) => {
     event.preventDefault()
@@ -133,7 +155,10 @@ const App = () => {
         handleNumberChange={handleNumberChange}
       />
       <h3>Numbers</h3>
-      <Contacts personsToShow={personsToShow} />
+      <Contacts
+        personsToShow={personsToShow}
+        handleContactDelete={handleContactDelete}
+      />
     </div>
   )
 }
