@@ -69,7 +69,7 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
-  const [errorMessage, setErrorMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState({message:'', type: ''})
 
   useEffect(() => {
     personsService
@@ -78,6 +78,11 @@ const App = () => {
         setPersons(initialContacts)
       })
   }, [])
+
+  const showNotification = (message, type) => {
+    setErrorMessage({ message, type })
+    setTimeout(() => setErrorMessage({ message: '', type: ''}), 4000)
+  }
 
   const handleContactDelete = (id) => {
     const person = persons.find(p => p.id === id)
@@ -88,9 +93,7 @@ const App = () => {
           setPersons(persons.filter(p => p.id !== id))
         })
         .catch(error => {
-          alert(
-            `the contact '${person.name}' was already deleted from server`
-          )
+          showNotification(`${person.name} was already deleted from server`, 'error')
           setPersons(persons.filter(p => p.id !== id))
         })
     }
@@ -104,7 +107,7 @@ const App = () => {
 
     if (existingPerson) {
       if (existingPerson.number === newNumber) {
-        alert(`${newName} is already added to phonebook`)
+        showNotification(`${newName} is already added to phonebook`, 'error')
         return
       }
 
@@ -117,16 +120,17 @@ const App = () => {
           .update(existingPerson.id, updatedContact)
           .then(returnedPerson => {
             setPersons(persons.map(p => p.id === existingPerson.id ? returnedPerson : p))
-            setErrorMessage(
-              `Changed number for ${returnedPerson.name}`
-            )
-            setTimeout(() => {
-              setErrorMessage(null)
-            }, 4000)
+            showNotification(`Number was changed for ${returnedPerson.name}`, 'success')
             setNewName('')
             setNewNumber('')
-        })
-      }
+          })
+          .catch(error => {
+            showNotification(`Information of ${existingPerson.name} has already been removed from server`, 'error')
+            setPersons(persons.filter(p => p.id !== existingPerson.id))
+            setNewName('')
+            setNewNumber('')
+          })
+       }
       return
     }
 
@@ -139,12 +143,7 @@ const App = () => {
       .create(personObject)
       .then(returnedPerson => {
         setPersons(persons.concat(returnedPerson))
-        setErrorMessage(
-          `Added ${returnedPerson.name}`
-        )
-        setTimeout(() => {
-          setErrorMessage(null)
-        }, 4000)
+        showNotification(`Added ${returnedPerson.name}`, 'success')
         setNewName('')
         setNewNumber('')
       })
@@ -172,7 +171,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Notification message={errorMessage} />
+      <Notification notification={errorMessage} />
       <FilterContacts
         value={filter}
         onChange={handleFilterChange}
