@@ -78,18 +78,18 @@ const App = () => {
   }, [])
 
   const handleContactDelete = (id) => {
-    const person = persons.find(n => n.id === id)
+    const person = persons.find(p => p.id === id)
     if (window.confirm(`Delete ${person.name}?`)) {
       personsService
         .remove(id)
         .then(() => {
-          setPersons(persons.filter(person => person.id !== id))
+          setPersons(persons.filter(p => p.id !== id))
         })
         .catch(error => {
           alert(
             `the contact '${person.name}' was already deleted from server`
           )
-          setPersons(persons.filter(person => person.id !== id))
+          setPersons(persons.filter(p => p.id !== id))
         })
     }
   }
@@ -97,27 +97,43 @@ const App = () => {
   const addPerson = (event) => {
     event.preventDefault()
 
-    const nameAlreadyExists = persons.some(
-      person => person.name === newName
-    )
+    const existingPerson = persons.find(
+      p => p.name === newName)
 
-    if (nameAlreadyExists) {
-      alert(`${newName} is already added to phonebook`)
-    }
-
-    else {
-      const personObject = {
-        name: newName,
-        number: newNumber
+    if (existingPerson) {
+      if (existingPerson.number === newNumber) {
+        alert(`${newName} is already added to phonebook`)
+        return
       }
-      personsService
-        .create(personObject)
-        .then(returnedPerson => {
-          setPersons(persons.concat(returnedPerson))
-          setNewName('')
-          setNewNumber('')
-      })
+
+      if (window.confirm(
+        `${newName} is already added to phonebook, replace the old number with a new one?`
+      )) {
+        const updatedContact = { ...existingPerson, number: newNumber }
+
+        personsService
+          .update(existingPerson.id, updatedContact)
+          .then(returnedPerson => {
+            setPersons(persons.map(p => p.id === existingPerson.id ? returnedPerson : p))
+            setNewName('')
+            setNewNumber('')
+        })
+      }
+      return
     }
+
+    const personObject = {
+      name: newName,
+      number: newNumber
+    }
+
+    personsService
+      .create(personObject)
+      .then(returnedPerson => {
+        setPersons(persons.concat(returnedPerson))
+        setNewName('')
+        setNewNumber('')
+      })
   }
 
   const personsToShow = persons.filter(person => 
@@ -153,6 +169,7 @@ const App = () => {
         handleNameChange={handleNameChange}
         newNumber={newNumber}
         handleNumberChange={handleNumberChange}
+
       />
       <h3>Numbers</h3>
       <Contacts
