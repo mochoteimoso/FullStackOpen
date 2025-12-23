@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import countriesService from './services/countries'
+import weatherService from './services/weather'
 
 const FilterCountries = ({ value, onChange}) => {
   return (
@@ -15,6 +16,17 @@ const FilterCountries = ({ value, onChange}) => {
 }
 
 const Country = ({ country }) => {
+  const [weather, setWeather] = useState(null)
+
+  useEffect(() => {
+    weatherService
+      .getWeatherForCapital(country.capital[0])
+      .then(data => {
+        console.log('API response:', data)
+        setWeather(data)
+      })
+  }, [country])
+
   return (
     <div>
       <h1>{country.name.common}</h1>
@@ -29,6 +41,19 @@ const Country = ({ country }) => {
         )}
       </ul>
       <img src={country.flags.png}/>
+      <h2>Weather in {country.capital}</h2>
+      {weather && (
+        <>
+          <p>Temperature {weather.main.temp} Celsius</p>
+          <img
+            src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`}
+          />
+          <p>Wind {weather.wind.speed} m/s</p>
+        </>
+      )}
+       {!weather &&
+        <p>Fetching weather...</p>
+       }
     </div>
   )
 }
