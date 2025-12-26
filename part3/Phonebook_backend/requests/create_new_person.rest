@@ -1,7 +1,33 @@
+### Create a valid new entry for person
 POST http://localhost:3001/api/persons
 Content-Type: application/json
 
 {
-	"name": "Nouvelle moi", 
-	"number": "12345"
+    "name": "Nouvelle moi", 
+    "number": "12345"
+}
+
+### Duplicate name
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+    "name": "Ada Lovelace", 
+    "number": "678910"
+}
+
+### Missing name
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+    "number": "98765"
+}
+
+### Missing number
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+    "name": "Missy me"
 }
