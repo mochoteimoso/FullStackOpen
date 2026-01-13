@@ -1,21 +1,30 @@
 const mongoose = require('mongoose')
 
-if (process.argv.length < 3) {
-  console.log('give password as argument')
-  process.exit(1)
-}
+mongoose.set('strictQuery', false)
 
-const password = process.argv[2]
+const url = process.env.MONGODB_URI
 
-const url = `mongodb+srv://fullstack:${encodeURIComponent(password)}@cluster0.0gw8ava.mongodb.net/phonebook?retryWrites=true&w=majority`
-
-mongoose.set('strictQuery',false)
-
+console.log('connecting to', url)
 mongoose.connect(url, { family: 4 })
+
+  .then(result => {
+    console.log('connected to MongoDB')
+  })
+  .catch(error => {
+    console.log('error connecting to MongoDB:', error.message)
+  })
 
 const contactSchema = new mongoose.Schema({
   name: String,
   phoneNumber: String
+})
+
+contactSchema.set('toJSON', {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString()
+    delete returnedObject._id
+    delete returnedObject.__v
+  }
 })
 
 const Contact = mongoose.model('Contact', contactSchema)
@@ -44,3 +53,6 @@ if (process.argv.length > 3 && process.argv.length < 6) {
     mongoose.connection.close()
   })
 }
+
+
+module.exports = mongoose.model('Contact', contactSchema)
