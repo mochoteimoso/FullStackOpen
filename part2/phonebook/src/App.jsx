@@ -106,7 +106,7 @@ const App = () => {
       p => p.name === newName)
 
     if (existingPerson) {
-      if (existingPerson.number === newNumber) {
+      if (existingPerson.phoneNumber === newNumber) {
         showNotification(`${newName} is already added to phonebook`, 'error')
         return
       }

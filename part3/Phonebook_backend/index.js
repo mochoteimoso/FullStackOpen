@@ -33,13 +33,6 @@ app.post('/api/persons', (request, response) => {
       error: 'name or number missing'
   })
 
-  /*const duplicateName = persons.find(person => person.name === body.name)
-
-  if (duplicateName)
-     return response.status(400).json({
-      error: 'name must be unique'
-  }) */
-
   const contact = new Contact ({
     name: body.name,
     phoneNumber: body.phoneNumber
@@ -72,6 +65,24 @@ app.get('/api/persons/:id', (request, response, next) => {
       } else {
         response.status(404).end()
       }
+    })
+    .catch(error => next(error))
+})
+
+app.put('/api/persons/:id', (request, response, next) => {
+  const { name, phoneNumber } = request.body
+
+  Contact.findById(request.params.id)
+    .then(contact => {
+      if (!contact) {
+        return response.status(404).end()
+      }
+
+      contact.phoneNumber = phoneNumber
+
+      return contact.save().then((updatedContact) => {
+        response.json(updatedContact)
+      })
     })
     .catch(error => next(error))
 })
