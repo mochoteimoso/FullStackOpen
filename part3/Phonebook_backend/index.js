@@ -44,11 +44,14 @@ app.post('/api/persons', (request, response) => {
 })
 
 app.get('/info', (request, response) => {
-  const personsNumber = persons.length
-  const date = new Date()
-  response.send(
-    `<p>Phonebook has info for ${personsNumber} people<p>
-    <p>${date}<p>`)
+  Contact.countDocuments({})
+    .then(count => {
+      const date = new Date()
+      response.send(
+        `<p>Phonebook has info for ${count} people<p>
+        <p>${date}<p>`)
+    })
+    .catch(error => next(error))
 })
 
 app.get('/api/persons', (request, response) => {
