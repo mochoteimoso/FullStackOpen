@@ -18,26 +18,26 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :b
 app.post('/api/persons', (request, response) => {
   const body = request.body
   
-  if (!body.name || !body.number)
+  if (!body.name || !body.phoneNumber)
     return response.status(400).json({
       error: 'name or number missing'
   })
 
-  const duplicateName = persons.find(person => person.name === body.name)
+  /*const duplicateName = persons.find(person => person.name === body.name)
 
   if (duplicateName)
      return response.status(400).json({
       error: 'name must be unique'
+  }) */
+
+  const contact = new Contact ({
+    name: body.name,
+    phoneNumber: body.phoneNumber
   })
 
-  const person = {
-    id: generateId(),
-    name: body.name,
-    number: body.number
-  }
-  persons = persons.concat(person)
-
-  response.json(person)
+  contact.save().then(savedContact => {
+    response.json(savedContact)
+  })
 })
 
 app.get('/info', (request, response) => {

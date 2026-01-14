@@ -42,7 +42,7 @@ const PersonForm = ({ addPerson, newName, handleNameChange, newNumber, handleNum
 const Contact = ({person, onDelete }) => {
   return (
     <li>
-      {person.name} {person.number}
+      {person.name} {person.phoneNumber}
       <button onClick={() => onDelete(person.id)}>
         delete
       </button>
@@ -114,7 +114,7 @@ const App = () => {
       if (window.confirm(
         `${newName} is already added to phonebook, replace the old number with a new one?`
       )) {
-        const updatedContact = { ...existingPerson, number: newNumber }
+        const updatedContact = { ...existingPerson, phoneNumber: newNumber }
 
         personsService
           .update(existingPerson.id, updatedContact)
@@ -136,7 +136,7 @@ const App = () => {
 
     const personObject = {
       name: newName,
-      number: newNumber
+      phoneNumber: newNumber
     }
 
     personsService
