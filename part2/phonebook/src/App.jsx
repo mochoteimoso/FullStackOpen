@@ -125,6 +125,11 @@ const App = () => {
             setNewNumber('')
           })
           .catch(error => {
+            if (error.response?.status === 400) {
+              showNotification(error.response.data.error, 'error')
+              return
+            }
+            
             showNotification(`Information of ${existingPerson.name} has already been removed from server`, 'error')
             setPersons(persons.filter(p => p.id !== existingPerson.id))
             setNewName('')
@@ -146,6 +151,11 @@ const App = () => {
         showNotification(`Added ${returnedPerson.name}`, 'success')
         setNewName('')
         setNewNumber('')
+      })
+      .catch(error => {
+        console.log(error.response.data.error)
+        const message = error.response?.data?.error || 'An error occurred'
+        showNotification(message,'error')
       })
   }
 

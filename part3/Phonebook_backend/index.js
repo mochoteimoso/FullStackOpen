@@ -10,6 +10,9 @@ const errorHandler = (error, request, response, next) => {
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
   }
+  if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
+  }
 
   next(error)
 }
@@ -25,7 +28,7 @@ app.use(express.static('dist'))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
   const body = request.body
   
   if (!body.name || !body.phoneNumber)
@@ -38,9 +41,12 @@ app.post('/api/persons', (request, response) => {
     phoneNumber: body.phoneNumber
   })
 
-  contact.save().then(savedContact => {
-    response.json(savedContact)
+  contact
+    .save()
+    .then(savedContact => {
+      response.json(savedContact)
   })
+    .catch(error => next(error))
 })
 
 app.get('/info', (request, response) => {
