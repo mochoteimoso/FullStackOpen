@@ -30,11 +30,11 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :b
 
 app.post('/api/persons', (request, response, next) => {
   const body = request.body
-  
+
   if (!body.name || !body.phoneNumber)
     return response.status(400).json({
       error: 'name or number missing'
-  })
+    })
 
   const contact = new Contact ({
     name: body.name,
@@ -45,11 +45,11 @@ app.post('/api/persons', (request, response, next) => {
     .save()
     .then(savedContact => {
       response.json(savedContact)
-  })
+    })
     .catch(error => next(error))
 })
 
-app.get('/info', (request, response) => {
+app.get('/info', (request, response, next) => {
   Contact.countDocuments({})
     .then(count => {
       const date = new Date()
@@ -61,7 +61,7 @@ app.get('/info', (request, response) => {
 })
 
 app.get('/api/persons', (request, response) => {
-   Contact.find({}).then(contacts => {
+  Contact.find({}).then(contacts => {
     response.json(contacts)
   })
 })
@@ -79,7 +79,7 @@ app.get('/api/persons/:id', (request, response, next) => {
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
-  const { name, phoneNumber } = request.body
+  const { phoneNumber } = request.body
 
   Contact.findById(request.params.id)
     .then(contact => {
@@ -98,7 +98,7 @@ app.put('/api/persons/:id', (request, response, next) => {
 
 app.delete('/api/persons/:id', (request, response, next) => {
   Contact.findByIdAndDelete(request.params.id)
-    .then(result => {
+    .then(() => {
       response.status(204).end()
     })
     .catch(error => next(error))

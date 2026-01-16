@@ -7,7 +7,7 @@ const url = process.env.MONGODB_URI
 console.log('connecting to', url)
 mongoose.connect(url, { family: 4 })
 
-  .then(result => {
+  .then(() => {
     console.log('connected to MongoDB')
   })
   .catch(error => {
@@ -62,7 +62,7 @@ if (process.argv.length > 3 && process.argv.length < 6) {
     phoneNumber: phoneNumber,
   })
 
-  contact.save().then(result => {
+  contact.save().then(() => {
     console.log(`added ${name} ${phoneNumber} to phonebook`)
     mongoose.connection.close()
   })
