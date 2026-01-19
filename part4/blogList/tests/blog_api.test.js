@@ -94,8 +94,8 @@ describe('when database already has some blog entries', () => {
 
   describe('deletion of a note', () => {
     test('succeeds with status code 204', async () => {
-      const notesAtStart = await helper.blogsInDb()
-      const blogToDelete = notesAtStart[0]
+      const blogsAtStart = await helper.blogsInDb()
+      const blogToDelete = blogsAtStart[0]
 
       await api
         .delete(`/api/blogs/${blogToDelete.id}`)
@@ -106,7 +106,28 @@ describe('when database already has some blog entries', () => {
       const ids = blogsAtEnd.map(n => n.id)
       assert(!ids.includes(blogToDelete.id))
 
-      assert.strictEqual(blogsAtEnd.length, helper.listWithMultipleBlogs.length - 1)
+      assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1)
+    })
+  })
+
+  describe('updating a blog entry', () => {
+    test('succeeds with status code 200 when updating likes', async () => {
+      const blogsAtStart = await helper.blogsInDb()
+      const blogToUpdate= blogsAtStart[1]
+
+      const updatedData = {
+        ...blogToUpdate,
+        likes: blogToUpdate.likes + 3
+      }
+      await api
+        .put(`/api/blogs/${blogToUpdate.id}`)
+        .send(updatedData)
+        .expect(200)
+      
+      const blogsAtEnd = await helper.blogsInDb()
+      const updatedBlog = blogsAtEnd.find(b => b.id === blogToUpdate.id)
+
+      assert.strictEqual(updatedBlog.likes, updatedData.likes)
     })
   })
 })
