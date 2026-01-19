@@ -35,6 +35,29 @@ test('unique identifier of blogs is called id (not _id)', async () => {
   })
 })
 
+test('a valid blog can be added ', async () => {
+  const newBlog = {
+    _id: "9a999a999b99a676234d17f9",
+    title: "Reactions to patterns",
+    author: "Sherlock Holmes",
+    url: "https://reactionstopatterns.com/",
+    likes: 77,
+    __v: 0
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await helper.blogsInDb()
+  assert.strictEqual(blogsAtEnd.length, helper.listWithMultipleBlogs.length + 1)
+
+  const contents = blogsAtEnd.map(n => n.title)
+  assert(contents.includes('Reactions to patterns'))
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
