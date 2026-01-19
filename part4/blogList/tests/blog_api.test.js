@@ -58,6 +58,23 @@ test('a valid blog can be added ', async () => {
   assert(contents.includes('Reactions to patterns'))
 })
 
+test('if likes property is missing, its value reverts to 0)', async () => {
+  const newBlog = {
+    title: "Bafflement ratio",
+    author: "Doctor Watson",
+    url: "https://bafflementratio.com/"
+  }
+
+   await api
+    .post('/api/blogs')
+    .send(newBlog)
+
+  const response = await api.get('/api/blogs')
+
+  const createdBlog = response.body.find(entry => entry.title === newBlog.title)
+  assert.strictEqual(createdBlog.likes, 0)
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
