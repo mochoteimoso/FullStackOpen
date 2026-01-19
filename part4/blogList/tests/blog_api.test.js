@@ -27,6 +27,15 @@ test('all blogs are returned', async () => {
   helper.listWithMultipleBlogs.length)
 })
 
+test('unique identifier of blogs is called id (not _id)', async () => {
+  const response = await api.get('/api/blogs')
+
+  response.body.forEach(blog => {
+    assert.ok(blog.id)
+  })
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
+
