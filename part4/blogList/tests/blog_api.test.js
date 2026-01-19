@@ -58,7 +58,7 @@ test('a valid blog can be added ', async () => {
   assert(contents.includes('Reactions to patterns'))
 })
 
-test('if likes property is missing, its value reverts to 0)', async () => {
+test('if likes property is missing, its value reverts to 0', async () => {
   const newBlog = {
     title: "Bafflement ratio",
     author: "Doctor Watson",
@@ -73,6 +73,20 @@ test('if likes property is missing, its value reverts to 0)', async () => {
 
   const createdBlog = response.body.find(entry => entry.title === newBlog.title)
   assert.strictEqual(createdBlog.likes, 0)
+})
+
+test('blog without title or url is not added', async () => {
+  const newBlog = {
+    author: "Moriarty"
+  }
+  
+   await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(400)
+
+  const blogsAtEnd = await helper.blogsInDb()
+  assert.strictEqual(blogsAtEnd.length, helper.listWithMultipleBlogs.length)
 })
 
 after(async () => {
