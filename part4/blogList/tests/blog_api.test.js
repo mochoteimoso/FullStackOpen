@@ -5,12 +5,24 @@ const supertest = require('supertest')
 const app = require('../app')
 const helper = require('./test_helper')
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
 const api = supertest(app)
 
 describe('when database already has some blog entries', () => {
+
   beforeEach(async () => {
     await Blog.deleteMany({})
+    await User.deleteMany({})
+
+    const user = new User({
+      username: 'toony',
+      name: 'toony tester',
+      passwordHash: 'greatestPW'
+    })
+    
+    await user.save()
+
     await Blog.insertMany(helper.listWithMultipleBlogs)
   })
 
@@ -39,12 +51,10 @@ describe('when database already has some blog entries', () => {
   describe('addition of a new blog', () => {
     test('a valid blog can be added ', async () => {
       const newBlog = {
-        _id: "9a999a999b99a676234d17f9",
         title: "Reactions to patterns",
         author: "Sherlock Holmes",
         url: "https://reactionstopatterns.com/",
         likes: 77,
-        __v: 0
       }
 
       await api
@@ -64,7 +74,7 @@ describe('when database already has some blog entries', () => {
       const newBlog = {
         title: "Bafflement ratio",
         author: "Doctor Watson",
-        url: "https://bafflementratio.com/"
+        url: "https://bafflementratio.com/",
       }
 
       await api
