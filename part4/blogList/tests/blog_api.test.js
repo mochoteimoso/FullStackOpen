@@ -36,7 +36,7 @@ describe('when database already has some blog entries', () => {
     })
   })
 
-  describe('addition of a new note', () => {
+  describe('addition of a new blog', () => {
     test('a valid blog can be added ', async () => {
       const newBlog = {
         _id: "9a999a999b99a676234d17f9",
@@ -92,7 +92,7 @@ describe('when database already has some blog entries', () => {
     })
   })
 
-  describe('deletion of a note', () => {
+  describe('deletion of a blog', () => {
     test('succeeds with status code 204', async () => {
       const blogsAtStart = await helper.blogsInDb()
       const blogToDelete = blogsAtStart[0]
