@@ -9,19 +9,27 @@ const User = require('../models/user')
 
 const api = supertest(app)
 
+let token
+
 describe('when database already has some blog entries', () => {
 
   beforeEach(async () => {
     await Blog.deleteMany({})
     await User.deleteMany({})
 
-    const user = new User({
+    const newUser = {
       username: 'toony',
       name: 'toony tester',
-      passwordHash: 'greatestPW'
-    })
+      password: 'greatestPW'
+    }
     
-    await user.save()
+    await api.post('/api/users').send(newUser)
+
+    const loginResponse = await api
+      .post('/api/login')
+      .send(newUser)
+
+    token = loginResponse.body.token
 
     await Blog.insertMany(helper.listWithMultipleBlogs)
   })
@@ -59,6 +67,7 @@ describe('when database already has some blog entries', () => {
 
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlog)
         .expect(201)
         .expect('Content-Type', /application\/json/)
@@ -79,6 +88,7 @@ describe('when database already has some blog entries', () => {
 
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlog)
 
       const response = await api.get('/api/blogs')
@@ -94,11 +104,24 @@ describe('when database already has some blog entries', () => {
 
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlog)
         .expect(400)
 
       const blogsAtEnd = await helper.blogsInDb()
       assert.strictEqual(blogsAtEnd.length, helper.listWithMultipleBlogs.length)
+    })
+
+    test('blog creation fails if token is not provided', async () => {
+      const newBlog = {
+        title: 'Tokenless blog',
+        url: 'tokenlesss.com'
+      }
+
+      await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(401)
     })
   })
 
