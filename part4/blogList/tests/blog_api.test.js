@@ -10,7 +10,7 @@ const User = require('../models/user')
 const api = supertest(app)
 
 let token
-let loggedUserId
+let userId
 
 describe('when database already has some blog entries', () => {
 
@@ -26,18 +26,17 @@ describe('when database already has some blog entries', () => {
     
     await api.post('/api/users').send(newUser)
 
+    const user = await User.findOne({ username: newUser.username })
+
     const loginResponse = await api
       .post('/api/login')
       .send(newUser)
 
     token = loginResponse.body.token
 
-    const user = await User.findOne({ username: newUser.username })
-    loggedUserId = user._id
-
     const blogsWithUser = helper.listWithMultipleBlogs.map(blog => ({
       ...blog,
-      user: loggedUserId
+      user: user.id
   }))
 
     await Blog.insertMany(blogsWithUser)
@@ -175,11 +174,25 @@ describe('when database already has some blog entries', () => {
       const blogsAtEnd = await helper.blogsInDb()
 
       const ids = blogsAtEnd.map(n => n.id)
-      assert(!ids.includes(blogToDelete.id))
+      assert(ids.includes(blogToDelete.id))
 
-      assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1)
+      assert.strictEqual(blogsAtEnd.length, blogsAtStart.length)
     })
-    
+
+    test('fails with status code 401 if token is missing', async () => {
+      const blogsAtStart = await helper.blogsInDb()
+      const blogToDelete = blogsAtStart[0]
+
+      await api
+        .delete(`/api/blogs/${blogToDelete.id}`)
+        .expect(401)
+
+      const blogsAtEnd = await helper.blogsInDb()
+      const ids = blogsAtEnd.map(b => b.id)
+      
+      assert(ids.includes(blogToDelete.id))
+      assert.strictEqual(blogsAtEnd.length, blogsAtStart.length)
+    })
   })
 
   describe('updating a blog entry', () => {
