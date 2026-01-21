@@ -10,6 +10,7 @@ const User = require('../models/user')
 const api = supertest(app)
 
 let token
+let loggedUserId
 
 describe('when database already has some blog entries', () => {
 
@@ -31,7 +32,15 @@ describe('when database already has some blog entries', () => {
 
     token = loginResponse.body.token
 
-    await Blog.insertMany(helper.listWithMultipleBlogs)
+    const user = await User.findOne({ username: newUser.username })
+    loggedUserId = user._id
+
+    const blogsWithUser = helper.listWithMultipleBlogs.map(blog => ({
+      ...blog,
+      user: loggedUserId
+  }))
+
+    await Blog.insertMany(blogsWithUser)
   })
 
   test('blogs are returned as json', async () => {
@@ -126,12 +135,13 @@ describe('when database already has some blog entries', () => {
   })
 
   describe('deletion of a blog', () => {
-    test('succeeds with status code 204', async () => {
+    test('succeeds with status code 204 when token matches that of the creator', async () => {
       const blogsAtStart = await helper.blogsInDb()
       const blogToDelete = blogsAtStart[0]
 
       await api
         .delete(`/api/blogs/${blogToDelete.id}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(204)
 
       const blogsAtEnd = await helper.blogsInDb()
@@ -141,6 +151,35 @@ describe('when database already has some blog entries', () => {
 
       assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1)
     })
+
+    test('fails with status code 403 when token does not match that of the creator', async () => {
+      const blogsAtStart = await helper.blogsInDb()
+      const blogToDelete = blogsAtStart[0]
+
+      const newUser = {
+        username: 'wronguser',
+        password: 'wrongPW'
+      }
+      await api
+        .post('/api/users')
+        .send(newUser)
+    
+      const result = await api.post('/api/login').send(newUser)
+      const wrongToken = result.body.token
+
+      await api
+        .delete(`/api/blogs/${blogToDelete.id}`)
+        .set('Authorization', `Bearer ${wrongToken}`)
+        .expect(403)
+
+      const blogsAtEnd = await helper.blogsInDb()
+
+      const ids = blogsAtEnd.map(n => n.id)
+      assert(!ids.includes(blogToDelete.id))
+
+      assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1)
+    })
+    
   })
 
   describe('updating a blog entry', () => {
